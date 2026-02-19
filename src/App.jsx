@@ -11,10 +11,15 @@ import ClubProfile from './pages/ClubProfile';
 function App() {
   return (
     <Router>
-      <div className="min-h-screen bg-gray-50 flex flex-col">
+      {/* CAMBIO CLAVE: "overflow-x-hidden" 
+         Esto corta cualquier elemento que sea más ancho que la pantalla del celular 
+         (como tablas grandes) evitando que toda la web se vea pequeña o "aplastada".
+      */}
+      <div className="min-h-screen bg-gray-50 flex flex-col w-full overflow-x-hidden">
         <Navbar />
         
-        <main className="flex-grow container mx-auto px-4 py-6">
+        {/* Agregado w-full para asegurar que tome el ancho disponible */}
+        <main className="flex-grow container mx-auto px-4 py-6 w-full">
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/calendario" element={<Calendar />} />
