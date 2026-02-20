@@ -41,7 +41,7 @@ const MATCHES_DB = [
 ];
 
 const EV_TYPES = [
-  {id:"goal",     emoji:"⚽", label:"Gol",         stat:"goals",     accent:"#22c55e", badge:"bg-green-500"},
+  {id:"goal",   emoji:"⚽", label:"Gol",        stat:"goals",     accent:"#22c55e", badge:"bg-green-500"},
   {id:"shot_on",  emoji:"🎯", label:"Tiro Arco",   stat:"shots_on",  accent:"#ffffff", badge:"bg-white"},
   {id:"shot_off", emoji:"💨", label:"Tiro Afuera", stat:"shots_off", accent:"#71717a", badge:"bg-zinc-500"},
   {id:"yellow",   emoji:"🟨", label:"Amarilla",    stat:"yellow",    accent:"#eab308", badge:"bg-yellow-500"},
@@ -92,7 +92,6 @@ function MatchSelector({ onEnter, isAdmin, onToggleAdmin }) {
   const [selected, setSelected] = useState(null);
 
   return (
-    // FIX EXTENSIÓN: min-h-screen + w-full garantizan que ocupe toda la pantalla
     <div className="min-h-screen w-full bg-white flex flex-col">
 
       {/* Barra superior */}
@@ -264,12 +263,6 @@ function LiveCenter({ match, isAdmin, onToggleAdmin, onBack }) {
   };
 
   return (
-    /*
-      FIX CLAVE DE EXTENSIÓN:
-      - Usamos `position: fixed` con inset-0 en lugar de h-screen
-        para que SIEMPRE ocupe exactamente toda la ventana sin importar
-        cómo App.jsx envuelva el componente.
-    */
     <div className="fixed inset-0 bg-white flex flex-col overflow-hidden">
 
       {/* ══════════════════════════════════════
@@ -464,24 +457,24 @@ function LiveCenter({ match, isAdmin, onToggleAdmin, onBack }) {
               {tab === "EVENTOS" && (
                 <div className="max-w-3xl mx-auto">
 
-                  {/* Paso 1 — Tipo de evento */}
+                  {/* Paso 1 — Tipo de evento CORREGIDO (apilado en celular) */}
                   <p className="font-black text-[9px] tracking-[0.25em] text-zinc-400 uppercase mb-3">
                     01 · TIPO DE EVENTO
                   </p>
-                  <div className="grid grid-cols-5 gap-1.5 mb-7">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2 mb-7">
                     {EV_TYPES.map(t => (
                       <button
                         key={t.id}
                         onClick={() => setEvType(t.id)}
                         style={evType === t.id ? { borderColor: t.accent, color: t.accent } : {}}
-                        className={`py-3 px-1 border-2 flex flex-col items-center gap-1.5 transition-all ${
+                        className={`py-3 px-2 border-2 flex flex-col items-center gap-1.5 transition-all ${
                           evType === t.id
                             ? "bg-black"
-                            : "border-zinc-100 bg-zinc-50 hover:border-black hover:bg-white"
+                            : "border-zinc-200 bg-zinc-50 hover:border-black hover:bg-white"
                         }`}
                       >
-                        <span className="text-lg md:text-xl">{t.emoji}</span>
-                        <span className={`font-black text-[7px] uppercase tracking-widest text-center leading-tight ${
+                        <span className="text-xl md:text-2xl">{t.emoji}</span>
+                        <span className={`font-black text-[8px] uppercase tracking-widest text-center leading-tight ${
                           evType === t.id ? "" : "text-zinc-500"
                         }`}>
                           {t.label}
@@ -490,16 +483,16 @@ function LiveCenter({ match, isAdmin, onToggleAdmin, onBack }) {
                     ))}
                   </div>
 
-                  {/* Paso 2 — Equipo */}
+                  {/* Paso 2 — Equipo CORREGIDO */}
                   <p className="font-black text-[9px] tracking-[0.25em] text-zinc-400 uppercase mb-3">
                     02 · EQUIPO
                   </p>
-                  <div className="grid grid-cols-2 gap-2 mb-7">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-7">
                     {["home", "away"].map(side => (
                       <button
                         key={side}
                         onClick={() => setEvTeam(side)}
-                        className={`py-3 border-2 font-black text-xs md:text-sm uppercase tracking-widest transition-all ${
+                        className={`py-4 border-2 font-black text-sm uppercase tracking-widest transition-all ${
                           evTeam === side
                             ? "border-black bg-black text-white"
                             : "border-zinc-200 text-zinc-400 hover:border-black hover:text-black"
@@ -510,18 +503,18 @@ function LiveCenter({ match, isAdmin, onToggleAdmin, onBack }) {
                     ))}
                   </div>
 
-                  {/* Paso 3 — Jugador */}
+                  {/* Paso 3 — Jugador CORREGIDO (Inputs apilados en móvil) */}
                   <p className="font-black text-[9px] tracking-[0.25em] text-zinc-400 uppercase mb-3">
                     03 · {evType === "sub" ? "SUSTITUCIÓN" : "JUGADOR & MINUTO"}
                   </p>
 
                   {evType === "sub" ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-7">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-7">
                       <div>
                         <label className="block font-black text-[9px] tracking-widest text-zinc-400 uppercase mb-2">Sale ↑</label>
                         <select
                           value={subOut} onChange={e => setSubOut(e.target.value)}
-                          className="w-full p-3 border-2 border-zinc-200 bg-white text-black font-bold text-sm outline-none focus:border-black transition-colors"
+                          className="w-full p-4 border-2 border-zinc-200 bg-white text-black font-bold text-sm outline-none focus:border-black transition-colors"
                         >
                           <option value="">— Seleccionar —</option>
                           {curSide.players.map(p => (
@@ -533,7 +526,7 @@ function LiveCenter({ match, isAdmin, onToggleAdmin, onBack }) {
                         <label className="block font-black text-[9px] tracking-widest text-zinc-400 uppercase mb-2">Entra ↓</label>
                         <select
                           value={subIn} onChange={e => setSubIn(e.target.value)}
-                          className="w-full p-3 border-2 border-zinc-200 bg-white text-black font-bold text-sm outline-none focus:border-black transition-colors"
+                          className="w-full p-4 border-2 border-zinc-200 bg-white text-black font-bold text-sm outline-none focus:border-black transition-colors"
                         >
                           <option value="">— Seleccionar —</option>
                           {curSide.bench.map(p => (
@@ -543,12 +536,12 @@ function LiveCenter({ match, isAdmin, onToggleAdmin, onBack }) {
                       </div>
                     </div>
                   ) : (
-                    <div className="grid grid-cols-3 gap-3 mb-7">
-                      <div className="col-span-2">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-7">
+                      <div className="sm:col-span-2">
                         <label className="block font-black text-[9px] tracking-widest text-zinc-400 uppercase mb-2">Jugador</label>
                         <select
                           value={evPlayer} onChange={e => setEvPlayer(e.target.value)}
-                          className="w-full p-3 border-2 border-zinc-200 bg-white text-black font-bold text-sm outline-none focus:border-black transition-colors"
+                          className="w-full p-4 border-2 border-zinc-200 bg-white text-black font-bold text-sm outline-none focus:border-black transition-colors"
                         >
                           <option value="">— General —</option>
                           {curSide.players.map(p => (
@@ -557,13 +550,13 @@ function LiveCenter({ match, isAdmin, onToggleAdmin, onBack }) {
                         </select>
                       </div>
                       <div>
-                        <label className="block font-black text-[9px] tracking-widest text-zinc-400 uppercase mb-2">MIN</label>
+                        <label className="block font-black text-[9px] tracking-widest text-zinc-400 uppercase mb-2">Minuto</label>
                         <input
                           type="number"
                           placeholder={`${Math.floor(seconds / 60)}`}
                           value={evMin}
                           onChange={e => setEvMin(e.target.value)}
-                          className="w-full p-3 border-2 border-zinc-200 bg-white text-black font-black text-center text-lg outline-none focus:border-black transition-colors"
+                          className="w-full p-4 border-2 border-zinc-200 bg-white text-black font-black text-center text-lg outline-none focus:border-black transition-colors"
                         />
                       </div>
                     </div>
@@ -572,7 +565,7 @@ function LiveCenter({ match, isAdmin, onToggleAdmin, onBack }) {
                   {/* Botón publicar */}
                   <button
                     onClick={addEvent}
-                    className="w-full py-4 bg-black text-white font-black text-sm uppercase tracking-widest hover:bg-red-600 transition-colors flex items-center justify-center gap-3"
+                    className="w-full py-5 bg-black text-white font-black text-sm md:text-base uppercase tracking-widest hover:bg-red-600 transition-colors flex items-center justify-center gap-3"
                   >
                     <span>+</span> PUBLICAR EN BITÁCORA
                   </button>
@@ -617,10 +610,10 @@ function LiveCenter({ match, isAdmin, onToggleAdmin, onBack }) {
               {/* ─ TAB: ESTADÍSTICAS ─ */}
               {tab === "ESTADÍSTICAS" && (
                 <div className="max-w-2xl mx-auto">
-                  <div className="flex justify-between items-center mb-6 pb-4 border-b-2 border-black">
-                    <span className="font-black text-lg uppercase tracking-tight">{match.home.name}</span>
-                    <span className="font-black text-[9px] tracking-widest text-zinc-400 uppercase">COMPARATIVA</span>
-                    <span className="font-black text-lg uppercase tracking-tight text-zinc-400">{match.away.name}</span>
+                  <div className="flex justify-between items-center mb-6 pb-4 border-b-2 border-black gap-2">
+                    <span className="font-black text-sm md:text-lg uppercase tracking-tight truncate">{match.home.name}</span>
+                    <span className="font-black text-[9px] tracking-widest text-zinc-400 uppercase text-center shrink-0">COMPARATIVA</span>
+                    <span className="font-black text-sm md:text-lg uppercase tracking-tight text-zinc-400 truncate text-right">{match.away.name}</span>
                   </div>
                   <StatBar label="TIROS TOTALES" hVal={stats.home.shots_on + stats.home.shots_off} aVal={stats.away.shots_on + stats.away.shots_off} />
                   {STAT_ROWS.map(r => (
