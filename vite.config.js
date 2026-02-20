@@ -4,5 +4,7 @@ import react from '@vitejs/plugin-react'
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react()],
-  base: "/liga-master/", // Esta línea es fundamental para que cargue en GitHub Pages
+  // Eliminamos o comentamos la propiedad 'base' 
+  // porque Vercel despliega directamente en la raíz (/)
+  // base: "/liga-master/", 
 })
