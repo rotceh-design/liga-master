@@ -357,7 +357,7 @@ function LiveCenter({ match, isAdmin, onToggleAdmin, onBack }) {
   const [half, setHalf]          = useState(1);
   const [events, setEvents]      = useState([]);
   const [tab, setTab]            = useState("EVENTOS");
-  const [exportData, setExportData] = useState(null); // Estado para el modal de exportación
+  const [showReport, setShowReport] = useState(false); // Estado para el modal del Reporte
 
   const [evType,   setEvType]   = useState("goal");
   const [evTeam,   setEvTeam]   = useState("home");
@@ -406,53 +406,111 @@ function LiveCenter({ match, isAdmin, onToggleAdmin, onBack }) {
     }
   };
 
-  // Exportar Informe Excel/CSV (con Modal Seguro Anti-bloqueos)
+  // Mostrar el reporte final
   const handleEndMatch = () => {
-    if(!window.confirm("¿Deseas finalizar el partido y generar el informe?")) return;
-    
+    if(!window.confirm("¿Deseas finalizar el partido y generar el Acta Oficial?")) return;
     setRunning(false);
     setIsLive(false);
+    setShowReport(true);
+  };
 
-    // Construir CSV
-    let csv = "MINUTO,EQUIPO,JUGADOR,EVENTO,DETALLE\n";
-    events.forEach(e => {
+  // Generador Inteligente de Excel (.xls) estructurado
+  const downloadProfessionalExcel = () => {
+    const uri = 'data:application/vnd.ms-excel;base64,';
+    const template = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="UTF-8"><!--[if gte mso 9]><xml><x:ExcelWorkbook><x:ExcelWorksheets><x:ExcelWorksheet><x:Name>{worksheet}</x:Name><x:WorksheetOptions><x:DisplayGridlines/></x:WorksheetOptions></x:ExcelWorksheet></x:ExcelWorksheets></x:ExcelWorkbook></xml><![endif]--></head><body>{table}</body></html>`;
+
+    // Construcción de la tabla HTML (Excel la lee perfectamente)
+    let htmlContent = `
+      <table border="1" cellpadding="5" cellspacing="0" style="font-family: Arial, sans-serif; border-collapse: collapse;">
+        <!-- 1. ENCABEZADO -->
+        <tr>
+          <th colspan="4" style="background-color: #000000; color: #ccff00; font-size: 24px; padding: 15px; text-align: center;">ACTA OFICIAL: LIGA MASTER</th>
+        </tr>
+        <tr>
+          <th colspan="2" style="background-color: #f3f4f6; font-size: 16px;">LOCAL: ${match.home.name}</th>
+          <th colspan="2" style="background-color: #f3f4f6; font-size: 16px;">VISITA: ${match.away.name}</th>
+        </tr>
+        <tr>
+          <th colspan="2" style="font-size: 28px; text-align: center;">${homeScore}</th>
+          <th colspan="2" style="font-size: 28px; text-align: center;">${awayScore}</th>
+        </tr>
+        <tr>
+          <td colspan="4" style="text-align: center; color: #666;">Jornada: ${match.jornada} | Estadio: ${match.estadio} | Fecha: ${new Date().toLocaleDateString()}</td>
+        </tr>
+        <tr><td colspan="4"></td></tr>
+
+        <!-- 2. ESTADÍSTICAS GLOBALES -->
+        <tr>
+          <th colspan="4" style="background-color: #374151; color: white; font-size: 18px;">ANÁLISIS ESTADÍSTICO</th>
+        </tr>
+        <tr style="background-color: #e5e7eb; font-weight: bold;">
+          <td style="text-align: right;">${match.home.name}</td>
+          <td colspan="2" style="text-align: center;">CONCEPTO</td>
+          <td style="text-align: left;">${match.away.name}</td>
+        </tr>
+        <tr>
+          <td style="text-align: right;">${stats.home.shots_on + stats.home.shots_off}</td>
+          <td colspan="2" style="text-align: center;">Tiros Totales</td>
+          <td style="text-align: left;">${stats.away.shots_on + stats.away.shots_off}</td>
+        </tr>
+    `;
+
+    // Añadir filas de estadísticas
+    STAT_ROWS.forEach(r => {
+      htmlContent += `
+        <tr>
+          <td style="text-align: right;">${stats.home[r.key]}</td>
+          <td colspan="2" style="text-align: center;">${r.label}</td>
+          <td style="text-align: left;">${stats.away[r.key]}</td>
+        </tr>
+      `;
+    });
+
+    htmlContent += `
+        <tr><td colspan="4"></td></tr>
+        <!-- 3. BITÁCORA DETALLADA -->
+        <tr>
+          <th colspan="4" style="background-color: #374151; color: white; font-size: 18px;">DESGLOSE DE EVENTOS (CRONOLÓGICO)</th>
+        </tr>
+        <tr style="background-color: #e5e7eb; font-weight: bold;">
+          <td>MINUTO</td>
+          <td>EQUIPO</td>
+          <td>JUGADOR</td>
+          <td>EVENTO / DETALLE</td>
+        </tr>
+    `;
+
+    // Añadir eventos ordenados cronológicamente
+    [...events].sort((a, b) => a.min - b.min).forEach(e => {
       const teamName = e.team === 'home' ? match.home.name : match.away.name;
       const typeLabel = EV_TYPES.find(t => t.id === e.type)?.label || e.type;
-      csv += `${e.min}',${teamName},${e.player},${typeLabel},${e.note || ''}\n`;
+      htmlContent += `
+        <tr>
+          <td style="text-align: center;">${e.min}'</td>
+          <td>${teamName}</td>
+          <td>${e.player}</td>
+          <td>${typeLabel} ${e.note ? `(${e.note})` : ''}</td>
+        </tr>
+      `;
     });
+
+    htmlContent += `</table>`;
+
+    // Convertir y Descargar
+    const base64 = (s) => window.btoa(unescape(encodeURIComponent(s)));
+    const format = (s, c) => s.replace(/{(\w+)}/g, (m, p) => c[p]);
+    const ctx = { worksheet: 'Acta Oficial', table: htmlContent };
     
-    csv += `\nRESULTADO FINAL\n${match.home.name},${homeScore}\n${match.away.name},${awayScore}\n`;
-
-    // 1. Mostrar la data en el modal (Garantiza que siempre pueda verse)
-    setExportData(csv);
-
-    // 2. Intentar descargar silenciosamente el archivo (Puede que falle en algunas webs embebidas)
     try {
-      const blob = new Blob(["\uFEFF" + csv], { type: 'text/csv;charset=utf-8;' });
       const link = document.createElement("a");
-      link.href = URL.createObjectURL(blob);
-      link.download = `Informe_${match.home.abbr}_vs_${match.away.abbr}_J14.csv`;
+      link.href = uri + base64(format(template, ctx));
+      link.download = `Acta_${match.home.abbr}_vs_${match.away.abbr}.xls`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
     } catch (error) {
-      console.warn("Descarga interceptada por entorno de seguridad");
+      alert("Tu navegador bloqueó la descarga directa. Usa el botón 'Imprimir / PDF'.");
     }
-  };
-
-  // Función exclusiva para el botón de copiar del Modal
-  const copyToClipboard = () => {
-    const textArea = document.createElement("textarea");
-    textArea.value = exportData;
-    document.body.appendChild(textArea);
-    textArea.select();
-    try {
-      document.execCommand('copy');
-      alert("✅ Datos copiados al portapapeles. ¡Pégalos en Excel o WhatsApp!");
-    } catch (err) {
-      alert("❌ No se pudo copiar automáticamente. Por favor, selecciona el texto y cópialo a mano.");
-    }
-    document.body.removeChild(textArea);
   };
 
   const StatBar = ({ label, hVal, aVal }) => {
@@ -476,30 +534,83 @@ function LiveCenter({ match, isAdmin, onToggleAdmin, onBack }) {
   return (
     <div className="fixed inset-0 bg-white flex flex-col overflow-hidden z-50">
 
-      {/* ══════ MODAL DE EXPORTACIÓN EXCEL/CSV ══════ */}
-      {exportData && (
-        <div className="absolute inset-0 z-[100] bg-black/80 flex items-center justify-center p-4 backdrop-blur-sm">
-          <div className="bg-white p-6 rounded-sm max-w-lg w-full shadow-2xl flex flex-col">
-            <h3 className="font-black text-xl mb-1 text-black">✅ PARTIDO FINALIZADO</h3>
-            <p className="text-zinc-600 text-xs mb-4 font-bold">
-              Si la descarga de Excel automática fue bloqueada por tu navegador, usa el botón de abajo para copiar los datos y pegarlos.
-            </p>
-            <textarea 
-              readOnly 
-              value={exportData}
-              className="w-full h-48 p-3 bg-zinc-100 border border-zinc-300 rounded font-mono text-xs mb-4 outline-none resize-none whitespace-pre"
-            />
-            <div className="flex gap-3">
-              <button 
-                onClick={copyToClipboard}
-                className="flex-1 bg-black text-white font-black text-xs py-3 rounded-sm hover:bg-zinc-800 transition-colors"
-              >
-                COPIAR DATOS
+      {/* ══════ MODAL DE ACTA OFICIAL (REPORTE PROFESIONAL) ══════ */}
+      {showReport && (
+        <div className="absolute inset-0 z-[100] bg-zinc-900/95 flex items-center justify-center p-4 backdrop-blur-md overflow-y-auto">
+          <div className="bg-white rounded shadow-2xl max-w-2xl w-full my-8 overflow-hidden flex flex-col max-h-full">
+            
+            {/* Header del Reporte */}
+            <div className="bg-black p-6 text-center border-b-4 border-[#ccff00] shrink-0">
+              <h2 className="font-black text-2xl text-white uppercase tracking-widest mb-1">Acta Oficial del Partido</h2>
+              <p className="text-[#ccff00] text-xs font-bold tracking-widest uppercase">{match.jornada} • {match.estadio}</p>
+            </div>
+
+            {/* Cuerpo del Reporte (Scrollable) */}
+            <div className="p-6 md:p-8 overflow-y-auto flex-1 bg-zinc-50">
+              {/* Resultado */}
+              <div className="flex justify-center items-center gap-6 mb-8 bg-white p-6 rounded border border-zinc-200 shadow-sm">
+                <div className="text-right flex-1"><p className="font-black text-xl uppercase">{match.home.name}</p></div>
+                <div className="px-6 py-2 bg-black rounded text-[#ccff00] font-black text-4xl font-mono">{homeScore} - {awayScore}</div>
+                <div className="text-left flex-1"><p className="font-black text-xl uppercase">{match.away.name}</p></div>
+              </div>
+
+              {/* Estadísticas */}
+              <div className="mb-8 bg-white rounded border border-zinc-200 shadow-sm overflow-hidden">
+                <div className="bg-zinc-200 px-4 py-2 border-b border-zinc-300">
+                  <h3 className="font-black text-xs text-zinc-700 uppercase tracking-widest">Análisis Estadístico</h3>
+                </div>
+                <div className="p-4 space-y-3">
+                  <StatBar label="TIROS TOTALES" hVal={stats.home.shots_on + stats.home.shots_off} aVal={stats.away.shots_on + stats.away.shots_off} />
+                  <StatBar label="FALTAS" hVal={stats.home.fouls} aVal={stats.away.fouls} />
+                  <StatBar label="AMARILLAS" hVal={stats.home.yellow} aVal={stats.away.yellow} />
+                  <StatBar label="ROJAS" hVal={stats.home.red} aVal={stats.away.red} />
+                </div>
+              </div>
+
+              {/* Eventos */}
+              <div className="bg-white rounded border border-zinc-200 shadow-sm overflow-hidden">
+                <div className="bg-zinc-200 px-4 py-2 border-b border-zinc-300">
+                  <h3 className="font-black text-xs text-zinc-700 uppercase tracking-widest">Desglose de Eventos</h3>
+                </div>
+                <table className="w-full text-left text-xs">
+                  <thead className="bg-zinc-50 text-zinc-500">
+                    <tr>
+                      <th className="p-3 font-bold uppercase">Min</th>
+                      <th className="p-3 font-bold uppercase">Equipo</th>
+                      <th className="p-3 font-bold uppercase">Jugador</th>
+                      <th className="p-3 font-bold uppercase">Evento</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-zinc-200">
+                    {[...events].sort((a,b) => a.min - b.min).map(e => {
+                      const tInfo = EV_TYPES.find(x => x.id === e.type);
+                      return (
+                        <tr key={e.id}>
+                          <td className="p-3 font-mono font-bold text-red-500">{e.min}'</td>
+                          <td className="p-3 font-bold uppercase">{e.team === 'home' ? match.home.abbr : match.away.abbr}</td>
+                          <td className="p-3 uppercase">{e.player}</td>
+                          <td className="p-3 flex items-center gap-2">
+                            <span>{tInfo?.emoji}</span> 
+                            <span className="font-bold">{tInfo?.label}</span>
+                            {e.note && <span className="text-zinc-500 ml-1">({e.note})</span>}
+                          </td>
+                        </tr>
+                      )
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {/* Footer / Botones */}
+            <div className="p-4 bg-white border-t border-zinc-200 flex flex-col sm:flex-row gap-3 shrink-0">
+              <button onClick={downloadProfessionalExcel} className="flex-1 bg-green-600 hover:bg-green-700 text-white font-black text-xs py-4 uppercase tracking-widest transition-colors rounded-sm shadow-md">
+                ⬇ DESCARGAR EXCEL PROFESIONAL
               </button>
-              <button 
-                onClick={() => setExportData(null)}
-                className="flex-1 bg-zinc-200 text-black font-black text-xs py-3 rounded-sm hover:bg-zinc-300 transition-colors"
-              >
+              <button onClick={() => window.print()} className="flex-1 bg-black hover:bg-zinc-800 text-white font-black text-xs py-4 uppercase tracking-widest transition-colors rounded-sm shadow-md">
+                🖨 IMPRIMIR / PDF
+              </button>
+              <button onClick={() => setShowReport(false)} className="px-6 bg-zinc-200 hover:bg-zinc-300 text-black font-black text-xs py-4 uppercase tracking-widest transition-colors rounded-sm">
                 CERRAR
               </button>
             </div>
@@ -538,7 +649,7 @@ function LiveCenter({ match, isAdmin, onToggleAdmin, onBack }) {
         </div>
       </div>
 
-      {/* ══════ MARCADOR (UNICO Y PRINCIPAL) ══════ */}
+      {/* ══════ MARCADOR ══════ */}
       {(isAdmin || isLive) && (
         <div className="bg-black border-b-4 border-white shrink-0">
           <div className="text-center pt-1.5">
