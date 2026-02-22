@@ -1,8 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
-import { useAuth } from '../context/AuthContext';
 
 // ─────────────────────────────────────────────────────────────────────────────
-// BASE DE DATOS
+// BASE DE DATOS MOCK
 // ─────────────────────────────────────────────────────────────────────────────
 const MATCHES_DB = [
   {
@@ -41,8 +40,8 @@ const MATCHES_DB = [
 ];
 
 const EV_TYPES = [
-  {id:"goal",     emoji:"⚽", label:"Gol",         stat:"goals",     accent:"#22c55e"},
-  {id:"shot_on",  emoji:"🎯", label:"Tiro Arco",   stat:"shots_on",  accent:"#ffffff"},
+  {id:"goal",     emoji:"⚽", label:"Gol",        stat:"goals",     accent:"#22c55e"},
+  {id:"shot_on",  emoji:"🎯", label:"Tiro Arco",  stat:"shots_on",  accent:"#ffffff"},
   {id:"shot_off", emoji:"💨", label:"Tiro Afuera", stat:"shots_off", accent:"#71717a"},
   {id:"yellow",   emoji:"🟨", label:"Amarilla",    stat:"yellow",    accent:"#eab308"},
   {id:"red",      emoji:"🟥", label:"Roja",        stat:"red",       accent:"#ef4444"},
@@ -106,7 +105,7 @@ function MatchSelector({ onEnter, isAdmin, onToggleAdmin }) {
       </div>
 
       <div className="bg-black px-6 md:px-10 pt-10 pb-8 border-b-4 border-white">
-        <p className="text-red-500 font-black text-xs tracking-[0.3em] uppercase mb-2">● TEMPORADA ACTIVA</p>
+        <p className="text-[#ccff00] font-black text-xs tracking-[0.3em] uppercase mb-2">● TEMPORADA ACTIVA</p>
         <h1 className="font-black text-white text-5xl md:text-8xl tracking-tighter uppercase leading-none">
           JORNADA<br />14
         </h1>
@@ -124,7 +123,7 @@ function MatchSelector({ onEnter, isAdmin, onToggleAdmin }) {
           >
             <div className={`flex justify-between items-center px-5 py-3 ${selected?.id === m.id ? "bg-black" : "bg-zinc-100"}`}>
               <span className={`font-black text-[10px] tracking-widest uppercase ${selected?.id === m.id ? "text-white" : "text-zinc-500"}`}>{m.jornada}</span>
-              <span className={`font-black text-sm ${selected?.id === m.id ? "text-red-400" : "text-zinc-400"}`}>{m.hora}</span>
+              <span className={`font-black text-sm ${selected?.id === m.id ? "text-[#ccff00]" : "text-zinc-400"}`}>{m.hora}</span>
             </div>
             <div className="p-6">
               <div className="flex items-center justify-between mb-5">
@@ -147,14 +146,14 @@ function MatchSelector({ onEnter, isAdmin, onToggleAdmin }) {
       <div className="bg-white border-t-2 border-black px-6 md:px-10 py-5 flex flex-col sm:flex-row items-center justify-between gap-4">
         <p className="font-black text-sm uppercase tracking-widest text-center sm:text-left">
           {selected
-            ? <span className="text-black"><span className="text-red-500 mr-2">✦</span>{selected.home.name} VS {selected.away.name}</span>
+            ? <span className="text-black"><span className="text-[#ccff00] mr-2">✦</span>{selected.home.name} VS {selected.away.name}</span>
             : <span className="text-zinc-300">SELECCIONA UN PARTIDO</span>
           }
         </p>
         <button
           disabled={!selected}
           onClick={() => selected && onEnter(selected)}
-          className="w-full sm:w-auto bg-black text-white font-black text-sm uppercase tracking-widest px-10 py-4 hover:bg-red-600 transition-colors disabled:opacity-20 disabled:cursor-not-allowed"
+          className="w-full sm:w-auto bg-black text-white font-black text-sm uppercase tracking-widest px-10 py-4 hover:bg-[#ccff00] hover:text-black transition-colors disabled:opacity-20 disabled:cursor-not-allowed"
         >
           ENTRAR AL LIVE CENTER →
         </button>
@@ -164,35 +163,23 @@ function MatchSelector({ onEnter, isAdmin, onToggleAdmin }) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// VISTA PÚBLICA — Pre-partido: animación de carga
+// VISTA PÚBLICA — Pre-partido: Animación de Pelota 16-bit
 // ─────────────────────────────────────────────────────────────────────────────
 function PreMatchWaiting({ match }) {
   return (
     <>
-      {/* Animaciones CSS */}
       <style>{`
-        @keyframes runner {
-          0%   { transform: translateX(-60px) scaleX(1);  }
-          49%  { transform: translateX(60px)  scaleX(1);  }
-          50%  { transform: translateX(60px)  scaleX(-1); }
-          99%  { transform: translateX(-60px) scaleX(-1); }
-          100% { transform: translateX(-60px) scaleX(1);  }
-        }
-        @keyframes runnerBounce {
-          0%, 100% { transform: translateY(0px);   }
-          50%       { transform: translateY(-6px);  }
+        @keyframes roll {
+          0%   { transform: translateX(-80px) rotate(0deg); }
+          50%  { transform: translateX(80px) rotate(360deg); }
+          100% { transform: translateX(-80px) rotate(0deg); }
         }
         @keyframes fieldPulse {
           0%, 100% { opacity: 0.15; }
-          50%       { opacity: 0.3;  }
+          50%       { opacity: 0.4;  }
         }
-        .runner-emoji {
-          display: inline-block;
-          animation: runner 2.4s linear infinite;
-        }
-        .runner-inner {
-          display: inline-block;
-          animation: runnerBounce 0.4s ease-in-out infinite;
+        .pixel-ball {
+          animation: roll 3.5s linear infinite;
         }
         .field-line {
           animation: fieldPulse 2s ease-in-out infinite;
@@ -201,27 +188,26 @@ function PreMatchWaiting({ match }) {
 
       <div className="flex-1 flex flex-col items-center justify-center bg-black px-6 py-10">
 
-        {/* Campo con jugador corriendo */}
+        {/* Campo con pelota 16-bit rodando */}
         <div className="relative w-full max-w-sm mb-8">
-          {/* Líneas del campo */}
-          <div className="field-line border-2 border-white/20 rounded-lg h-24 w-full flex items-center justify-center relative overflow-hidden">
-            {/* Línea central */}
+          <div className="field-line border-2 border-white/20 rounded-lg h-24 w-full flex items-center justify-center relative overflow-hidden bg-zinc-950">
             <div className="absolute inset-y-0 left-1/2 w-px bg-white/20" />
-            {/* Círculo central */}
             <div className="w-12 h-12 rounded-full border border-white/20" />
-            {/* Jugador corriendo */}
+            
+            {/* Pelota 16-bit SVG */}
             <div className="absolute inset-0 flex items-center justify-center">
-              <span className="runner-emoji">
-                <span className="runner-inner text-3xl">🏃‍♂️</span>
-              </span>
+              <div className="pixel-ball">
+                <svg viewBox="0 0 16 16" className="w-8 h-8 text-[#ccff00] fill-current" style={{shapeRendering: 'crispEdges'}}>
+                  <path d="M5 1h6v2H5V1zm6 2h2v2h-2V3zM3 5h2V3H3v2zm10 0h2v6h-2V5zM1 11h2V5H1v6zm2 2h2v-2H3v2zm10 0h-2v-2h2v2zM5 15h6v-2H5v2zM6 6h4v4H6V6z"/>
+                </svg>
+              </div>
             </div>
           </div>
-          {/* Sombra del campo */}
-          <div className="absolute -bottom-1 inset-x-4 h-1 bg-white/5 rounded-full blur-sm" />
+          <div className="absolute -bottom-1 inset-x-4 h-1 bg-[#ccff00]/10 rounded-full blur-sm" />
         </div>
 
         {/* Texto */}
-        <p className="font-black text-[10px] tracking-[0.4em] text-red-500 uppercase mb-3">
+        <p className="font-black text-[10px] tracking-[0.4em] text-[#ccff00] uppercase mb-3">
           ● PARTIDO EN BREVE
         </p>
         <h2 className="font-black text-white text-3xl md:text-5xl tracking-tighter uppercase text-center leading-tight mb-2">
@@ -229,29 +215,18 @@ function PreMatchWaiting({ match }) {
           <span className="text-zinc-600 text-xl">VS</span><br />
           {match.away.name}
         </h2>
-        <p className="text-zinc-600 font-bold text-[10px] tracking-widest uppercase mt-4">
+        <p className="text-zinc-500 font-bold text-[10px] tracking-widest uppercase mt-4">
           {match.jornada} · {match.estadio} · {match.hora}
         </p>
-
-        {/* Puntos de carga */}
-        <div className="flex gap-2 mt-8">
-          {[0, 1, 2].map(i => (
-            <div
-              key={i}
-              className="w-1.5 h-1.5 bg-white rounded-full"
-              style={{ animation: `fieldPulse 1.2s ease-in-out ${i * 0.3}s infinite` }}
-            />
-          ))}
-        </div>
       </div>
     </>
   );
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// VISTA PÚBLICA — En vivo: timeline de 3 columnas
+// VISTA PÚBLICA — En vivo: timeline de 3 columnas (SIN MARCADOR DUPLICADO)
 // ─────────────────────────────────────────────────────────────────────────────
-function LiveTimeline({ match, events, seconds, half, homeScore, awayScore }) {
+function LiveTimeline({ match, events }) {
   const timelineEndRef = useRef(null);
 
   useEffect(() => {
@@ -268,48 +243,22 @@ function LiveTimeline({ match, events, seconds, half, homeScore, awayScore }) {
         .event-row { animation: eventSlide 0.3s ease-out; }
       `}</style>
 
-      <div className="flex-1 flex flex-col overflow-hidden min-h-0 bg-black">
+      <div className="flex-1 flex flex-col overflow-hidden min-h-0 bg-black pt-2">
 
-        {/* Mini marcador en vivo */}
-        <div className="flex items-center justify-between px-4 md:px-8 py-2 border-b border-zinc-800 shrink-0">
-          <span className="font-black text-white text-xs md:text-sm uppercase tracking-tight truncate flex-1 text-left">
-            {match.home.name}
-          </span>
-
-          <div className="flex items-center gap-2 md:gap-4 px-4 shrink-0">
-            <span className="font-black text-white text-2xl md:text-4xl tabular-nums">{homeScore}</span>
-            <div className="flex flex-col items-center">
-              <div className="flex items-center gap-1.5 mb-0.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
-                <span className="font-black text-red-400 text-[9px] uppercase tracking-widest">EN VIVO</span>
-              </div>
-              <span className="font-black text-zinc-400 text-xs tabular-nums">{fmtTime(seconds)}</span>
-              <span className="font-bold text-zinc-700 text-[8px] uppercase tracking-widest">
-                {half === 1 ? "1ER T" : half === 2 ? "2DO T" : "FINAL"}
-              </span>
-            </div>
-            <span className="font-black text-zinc-500 text-2xl md:text-4xl tabular-nums">{awayScore}</span>
-          </div>
-
-          <span className="font-black text-zinc-500 text-xs md:text-sm uppercase tracking-tight truncate flex-1 text-right">
-            {match.away.name}
-          </span>
-        </div>
-
-        {/* Cabeceras de columna */}
-        <div className="flex items-center border-b border-zinc-800 shrink-0">
-          <div className="flex-1 px-4 py-2 flex items-center gap-2">
-            <div className="w-5 h-5 rounded-full bg-white text-black flex items-center justify-center font-black text-[9px] shrink-0">
+        {/* Cabeceras de columna (SOLO TÍTULOS DE EQUIPOS, EL MARCADOR GIGANTE ESTÁ ARRIBA) */}
+        <div className="flex items-center border-b border-zinc-800 shrink-0 mb-2">
+          <div className="flex-1 px-4 py-3 flex items-center gap-2">
+            <div className="w-6 h-6 rounded-full bg-white text-black flex items-center justify-center font-black text-[10px] shrink-0">
               {match.home.abbr[0]}
             </div>
-            <span className="font-black text-[9px] text-zinc-400 uppercase tracking-widest truncate">{match.home.name}</span>
+            <span className="font-black text-[10px] text-zinc-400 uppercase tracking-widest truncate">{match.home.name}</span>
           </div>
           <div className="w-20 md:w-24 flex justify-center">
             <span className="font-black text-[8px] text-zinc-700 uppercase tracking-widest">MIN</span>
           </div>
-          <div className="flex-1 px-4 py-2 flex items-center justify-end gap-2">
-            <span className="font-black text-[9px] text-zinc-400 uppercase tracking-widest truncate">{match.away.name}</span>
-            <div className="w-5 h-5 rounded-full bg-zinc-800 border border-zinc-600 text-zinc-300 flex items-center justify-center font-black text-[9px] shrink-0">
+          <div className="flex-1 px-4 py-3 flex items-center justify-end gap-2">
+            <span className="font-black text-[10px] text-zinc-400 uppercase tracking-widest truncate">{match.away.name}</span>
+            <div className="w-6 h-6 rounded-full bg-zinc-800 border border-zinc-600 text-zinc-300 flex items-center justify-center font-black text-[10px] shrink-0">
               {match.away.abbr[0]}
             </div>
           </div>
@@ -337,10 +286,7 @@ function LiveTimeline({ match, events, seconds, half, homeScore, awayScore }) {
                       {home ? (
                         <>
                           <div className="text-right">
-                            <div
-                              style={{ color: def.accent }}
-                              className="font-black text-[9px] uppercase tracking-widest"
-                            >
+                            <div style={{ color: def.accent }} className="font-black text-[9px] uppercase tracking-widest">
                               {def.label}
                             </div>
                             <div className="font-black text-white text-xs md:text-sm uppercase leading-tight">
@@ -372,10 +318,7 @@ function LiveTimeline({ match, events, seconds, half, homeScore, awayScore }) {
                         <>
                           <span className="text-lg md:text-xl shrink-0">{def.emoji}</span>
                           <div>
-                            <div
-                              style={{ color: def.accent }}
-                              className="font-black text-[9px] uppercase tracking-widest"
-                            >
+                            <div style={{ color: def.accent }} className="font-black text-[9px] uppercase tracking-widest">
                               {def.label}
                             </div>
                             <div className="font-black text-white text-xs md:text-sm uppercase leading-tight">
@@ -404,15 +347,17 @@ function LiveTimeline({ match, events, seconds, half, homeScore, awayScore }) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// CENTRO EN VIVO
+// CENTRO EN VIVO (ADMIN)
 // ─────────────────────────────────────────────────────────────────────────────
 function LiveCenter({ match, isAdmin, onToggleAdmin, onBack }) {
   const [isLive, setIsLive]      = useState(false);
   const [seconds, setSeconds]    = useState(0);
+  const [addedTime, setAddedTime]= useState(0); // Minutos extra interactivos
   const [running, setRunning]    = useState(false);
   const [half, setHalf]          = useState(1);
   const [events, setEvents]      = useState([]);
   const [tab, setTab]            = useState("EVENTOS");
+  const [exportData, setExportData] = useState(null); // Estado para el modal de exportación
 
   const [evType,   setEvType]   = useState("goal");
   const [evTeam,   setEvTeam]   = useState("home");
@@ -454,6 +399,62 @@ function LiveCenter({ match, isAdmin, onToggleAdmin, onBack }) {
     setEvPlayer(""); setEvMin(""); setSubOut(""); setSubIn("");
   };
 
+  // Eliminar evento si el árbitro se equivoca
+  const removeEvent = (id) => {
+    if(window.confirm("¿Seguro que deseas eliminar este evento?")) {
+      setEvents(prev => prev.filter(e => e.id !== id));
+    }
+  };
+
+  // Exportar Informe Excel/CSV (con Modal Seguro Anti-bloqueos)
+  const handleEndMatch = () => {
+    if(!window.confirm("¿Deseas finalizar el partido y generar el informe?")) return;
+    
+    setRunning(false);
+    setIsLive(false);
+
+    // Construir CSV
+    let csv = "MINUTO,EQUIPO,JUGADOR,EVENTO,DETALLE\n";
+    events.forEach(e => {
+      const teamName = e.team === 'home' ? match.home.name : match.away.name;
+      const typeLabel = EV_TYPES.find(t => t.id === e.type)?.label || e.type;
+      csv += `${e.min}',${teamName},${e.player},${typeLabel},${e.note || ''}\n`;
+    });
+    
+    csv += `\nRESULTADO FINAL\n${match.home.name},${homeScore}\n${match.away.name},${awayScore}\n`;
+
+    // 1. Mostrar la data en el modal (Garantiza que siempre pueda verse)
+    setExportData(csv);
+
+    // 2. Intentar descargar silenciosamente el archivo (Puede que falle en algunas webs embebidas)
+    try {
+      const blob = new Blob(["\uFEFF" + csv], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = `Informe_${match.home.abbr}_vs_${match.away.abbr}_J14.csv`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (error) {
+      console.warn("Descarga interceptada por entorno de seguridad");
+    }
+  };
+
+  // Función exclusiva para el botón de copiar del Modal
+  const copyToClipboard = () => {
+    const textArea = document.createElement("textarea");
+    textArea.value = exportData;
+    document.body.appendChild(textArea);
+    textArea.select();
+    try {
+      document.execCommand('copy');
+      alert("✅ Datos copiados al portapapeles. ¡Pégalos en Excel o WhatsApp!");
+    } catch (err) {
+      alert("❌ No se pudo copiar automáticamente. Por favor, selecciona el texto y cópialo a mano.");
+    }
+    document.body.removeChild(textArea);
+  };
+
   const StatBar = ({ label, hVal, aVal }) => {
     const tot = hVal + aVal || 0;
     const pH  = tot === 0 ? 50 : Math.round(hVal / tot * 100);
@@ -473,7 +474,38 @@ function LiveCenter({ match, isAdmin, onToggleAdmin, onBack }) {
   };
 
   return (
-    <div className="fixed inset-0 bg-white flex flex-col overflow-hidden">
+    <div className="fixed inset-0 bg-white flex flex-col overflow-hidden z-50">
+
+      {/* ══════ MODAL DE EXPORTACIÓN EXCEL/CSV ══════ */}
+      {exportData && (
+        <div className="absolute inset-0 z-[100] bg-black/80 flex items-center justify-center p-4 backdrop-blur-sm">
+          <div className="bg-white p-6 rounded-sm max-w-lg w-full shadow-2xl flex flex-col">
+            <h3 className="font-black text-xl mb-1 text-black">✅ PARTIDO FINALIZADO</h3>
+            <p className="text-zinc-600 text-xs mb-4 font-bold">
+              Si la descarga de Excel automática fue bloqueada por tu navegador, usa el botón de abajo para copiar los datos y pegarlos.
+            </p>
+            <textarea 
+              readOnly 
+              value={exportData}
+              className="w-full h-48 p-3 bg-zinc-100 border border-zinc-300 rounded font-mono text-xs mb-4 outline-none resize-none whitespace-pre"
+            />
+            <div className="flex gap-3">
+              <button 
+                onClick={copyToClipboard}
+                className="flex-1 bg-black text-white font-black text-xs py-3 rounded-sm hover:bg-zinc-800 transition-colors"
+              >
+                COPIAR DATOS
+              </button>
+              <button 
+                onClick={() => setExportData(null)}
+                className="flex-1 bg-zinc-200 text-black font-black text-xs py-3 rounded-sm hover:bg-zinc-300 transition-colors"
+              >
+                CERRAR
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ══════ TOP BAR ══════ */}
       <div className="flex items-center justify-between px-4 md:px-8 h-12 bg-black shrink-0">
@@ -491,8 +523,8 @@ function LiveCenter({ match, isAdmin, onToggleAdmin, onBack }) {
         <div className="flex items-center gap-3 shrink-0">
           {isLive && (
             <div className="flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
-              <span className="text-red-400 font-black text-[9px] uppercase tracking-widest hidden sm:block">EN VIVO</span>
+              <span className="w-2 h-2 rounded-full bg-[#ccff00] animate-pulse" />
+              <span className="text-[#ccff00] font-black text-[9px] uppercase tracking-widest hidden sm:block">EN VIVO</span>
             </div>
           )}
           <button
@@ -506,7 +538,7 @@ function LiveCenter({ match, isAdmin, onToggleAdmin, onBack }) {
         </div>
       </div>
 
-      {/* ══════ MARCADOR (solo visible en modo admin o cuando está en vivo en público) ══════ */}
+      {/* ══════ MARCADOR (UNICO Y PRINCIPAL) ══════ */}
       {(isAdmin || isLive) && (
         <div className="bg-black border-b-4 border-white shrink-0">
           <div className="text-center pt-1.5">
@@ -528,16 +560,17 @@ function LiveCenter({ match, isAdmin, onToggleAdmin, onBack }) {
             <div className="flex items-center gap-2 md:gap-5 shrink-0">
               <span className="text-white font-black text-4xl md:text-7xl tabular-nums tracking-tighter leading-none">{homeScore}</span>
               <div className="flex flex-col items-center gap-1">
-                <div className={`font-black text-xs md:text-xl tabular-nums px-2 md:px-4 py-1 border-2 tracking-tighter transition-all ${
-                  running ? "text-red-400 border-red-500 bg-red-500/10" : "text-zinc-500 border-zinc-700"
+                <div className={`font-black text-xs md:text-xl tabular-nums px-2 md:px-4 py-1 border-2 tracking-tighter transition-all flex items-center justify-center gap-1 ${
+                  running ? "text-[#ccff00] border-[#ccff00] bg-[#ccff00]/10" : "text-zinc-500 border-zinc-700"
                 }`}>
                   {fmtTime(seconds)}
+                  {addedTime > 0 && <span className="text-[10px] text-white">+{addedTime}'</span>}
                 </div>
-                <span className="text-zinc-600 text-[8px] font-black uppercase tracking-widest">
+                <span className="text-zinc-500 text-[8px] font-black uppercase tracking-widest">
                   {half === 1 ? "1ER T" : half === 2 ? "2DO T" : "FINAL"}
                 </span>
               </div>
-              <span className="text-zinc-600 font-black text-4xl md:text-7xl tabular-nums tracking-tighter leading-none">{awayScore}</span>
+              <span className="text-zinc-500 font-black text-4xl md:text-7xl tabular-nums tracking-tighter leading-none">{awayScore}</span>
             </div>
 
             <div className="flex-1 flex flex-col items-center md:items-start min-w-0">
@@ -556,7 +589,7 @@ function LiveCenter({ match, isAdmin, onToggleAdmin, onBack }) {
                 <span key={g.id} className="text-[9px] font-bold text-zinc-500 flex items-center gap-1 uppercase tracking-widest">
                   <span className="text-green-400">⚽</span>
                   <span className="text-zinc-300">{g.player.split(" ").pop()}</span>
-                  <span className="text-red-400 font-black">{g.min}'</span>
+                  <span className="text-[#ccff00] font-black">{g.min}'</span>
                   <span className="text-zinc-700">· {g.team === "home" ? match.home.abbr : match.away.abbr}</span>
                 </span>
               ))}
@@ -569,45 +602,54 @@ function LiveCenter({ match, isAdmin, onToggleAdmin, onBack }) {
       <div className="flex-1 flex flex-col overflow-hidden min-h-0">
 
         {isAdmin ? (
-          /* ─────── PANEL COMISIONADO (sin cambios) ─────── */
+          /* ─────── PANEL COMISIONADO ─────── */
           <div className="flex-1 flex flex-col overflow-hidden min-h-0 bg-white">
 
-            {/* Barra de reloj */}
+            {/* Barra de Control General */}
             <div className="flex items-stretch shrink-0 border-b-2 border-black bg-black overflow-x-auto">
               <button
                 onClick={() => { running ? setRunning(false) : (setRunning(true), setIsLive(true)); }}
-                className={`flex items-center gap-2 px-5 py-3 font-black text-[10px] uppercase tracking-widest border-r-2 border-zinc-800 transition-all whitespace-nowrap ${
-                  running ? "bg-red-600 text-white hover:bg-red-700" : "bg-white text-black hover:bg-zinc-100"
+                className={`flex items-center gap-2 px-4 py-3 font-black text-[10px] uppercase tracking-widest border-r-2 border-zinc-800 transition-all whitespace-nowrap ${
+                  running ? "bg-[#ccff00] text-black" : "bg-white text-black hover:bg-zinc-200"
                 }`}
               >
-                <span className={`w-2 h-2 rounded-full ${running ? "bg-white animate-pulse" : "bg-black"}`} />
+                <span className={`w-2 h-2 rounded-full ${running ? "bg-black animate-pulse" : "bg-black"}`} />
                 {running ? "⏸ PAUSAR" : "▶ INICIAR"}
               </button>
-              <button
-                onClick={() => { setRunning(false); setSeconds(0); }}
-                className="px-4 font-black text-[10px] uppercase tracking-widest text-zinc-500 hover:text-white border-r-2 border-zinc-800 transition-colors whitespace-nowrap"
-              >
-                ↺ RST
-              </button>
-              {[1, 2].map(h => (
-                <button
-                  key={h}
-                  onClick={() => setHalf(h)}
-                  className={`px-5 font-black text-[10px] uppercase tracking-widest border-r-2 border-zinc-800 transition-all whitespace-nowrap ${
-                    half === h ? "bg-white text-black" : "text-zinc-600 hover:text-white"
-                  }`}
-                >
-                  {h === 1 ? "1ER T" : "2DO T"}
-                </button>
-              ))}
+              
+              {/* Nuevo Input Tiempo Extra Interactivo */}
+              <div className="flex items-center px-3 border-r-2 border-zinc-800 gap-2 shrink-0">
+                <span className="text-zinc-500 font-black text-[8px] uppercase hidden sm:block">EXTRA</span>
+                <div className="flex items-center bg-zinc-900 rounded border border-zinc-700">
+                  <span className="text-zinc-500 pl-2 font-bold text-[10px]">+</span>
+                  <input 
+                    type="number" 
+                    min="0"
+                    max="99"
+                    value={addedTime === 0 ? "" : addedTime} 
+                    onChange={(e) => setAddedTime(Number(e.target.value) || 0)}
+                    className="w-6 h-6 sm:w-8 sm:h-7 bg-transparent text-[#ccff00] font-black text-xs text-center outline-none"
+                    placeholder="0"
+                  />
+                  <span className="text-zinc-500 pr-2 font-bold text-[10px]">'</span>
+                </div>
+              </div>
+
               <button
                 onClick={() => setIsLive(v => !v)}
-                className={`ml-auto flex items-center gap-2 px-5 font-black text-[10px] uppercase tracking-widest transition-all whitespace-nowrap border-l-2 border-zinc-800 ${
-                  isLive ? "text-red-400 bg-red-500/10" : "text-zinc-600 hover:text-white"
+                className={`flex items-center gap-2 px-4 font-black text-[9px] uppercase tracking-widest transition-all whitespace-nowrap border-r-2 border-zinc-800 ${
+                  isLive ? "text-[#ccff00] bg-[#ccff00]/10" : "text-zinc-600 hover:text-white"
                 }`}
               >
-                <span className={`w-2 h-2 rounded-full ${isLive ? "bg-red-500 animate-pulse" : "bg-zinc-700"}`} />
-                {isLive ? "TX ACTIVA" : "TX OFF"}
+                <span className={`w-1.5 h-1.5 rounded-full ${isLive ? "bg-[#ccff00] animate-pulse" : "bg-zinc-700"}`} />
+                {isLive ? "TX ON" : "TX OFF"}
+              </button>
+
+              <button
+                onClick={handleEndMatch}
+                className="ml-auto flex items-center gap-2 px-5 py-3 font-black text-[10px] uppercase tracking-widest bg-red-600 hover:bg-red-700 text-white transition-colors whitespace-nowrap"
+              >
+                FINALIZAR
               </button>
             </div>
 
@@ -626,7 +668,7 @@ function LiveCenter({ match, isAdmin, onToggleAdmin, onBack }) {
               ))}
             </div>
 
-            {/* Contenido scrollable */}
+            {/* Contenido scrollable de herramientas */}
             <div className="flex-1 overflow-y-auto p-4 md:p-8 bg-white">
 
               {tab === "EVENTOS" && (
@@ -694,7 +736,7 @@ function LiveCenter({ match, isAdmin, onToggleAdmin, onBack }) {
                         <label className="block font-black text-[9px] tracking-widest text-zinc-400 uppercase mb-2">Jugador</label>
                         <select value={evPlayer} onChange={e => setEvPlayer(e.target.value)}
                           className="w-full p-4 border-2 border-zinc-200 bg-white text-black font-bold text-sm outline-none focus:border-black transition-colors">
-                          <option value="">— General —</option>
+                          <option value="">— General / No especificado —</option>
                           {curSide.players.map(p => <option key={p.id} value={`#${p.number} ${p.name}`}>#{p.number} {p.name}</option>)}
                         </select>
                       </div>
@@ -711,7 +753,7 @@ function LiveCenter({ match, isAdmin, onToggleAdmin, onBack }) {
                     </div>
                   )}
 
-                  <button onClick={addEvent} className="w-full py-5 bg-black text-white font-black text-sm md:text-base uppercase tracking-widest hover:bg-red-600 transition-colors flex items-center justify-center gap-3">
+                  <button onClick={addEvent} className="w-full py-5 bg-black text-white font-black text-sm md:text-base uppercase tracking-widest hover:bg-[#ccff00] hover:text-black transition-colors flex items-center justify-center gap-3 shadow-xl">
                     <span>+</span> PUBLICAR EN BITÁCORA
                   </button>
                 </div>
@@ -733,16 +775,6 @@ function LiveCenter({ match, isAdmin, onToggleAdmin, onBack }) {
                             <span className="font-black text-zinc-300 w-6 text-right text-sm">{p.number}</span>
                             <span className="font-bold text-[9px] text-zinc-400 w-8 uppercase tracking-widest">{p.pos}</span>
                             <span className="font-black text-sm flex-1 uppercase">{p.name}</span>
-                          </div>
-                        ))}
-                      </div>
-                      <p className="font-black text-[9px] tracking-widest text-zinc-300 uppercase mb-2">— SUPLENTES</p>
-                      <div className="space-y-0.5">
-                        {match[side].bench.map(p => (
-                          <div key={p.id} className="flex items-center gap-3 px-3 py-1.5 opacity-40">
-                            <span className="font-bold text-zinc-400 w-6 text-right text-sm">{p.number}</span>
-                            <span className="font-bold text-[9px] text-zinc-400 w-8 uppercase tracking-widest">{p.pos}</span>
-                            <span className="font-bold text-sm flex-1 uppercase">{p.name}</span>
                           </div>
                         ))}
                       </div>
@@ -780,10 +812,13 @@ function LiveCenter({ match, isAdmin, onToggleAdmin, onBack }) {
                           : (
                             <div className="space-y-1.5">
                               {cards.map(e => (
-                                <div key={e.id} className="flex items-center gap-4 px-4 py-3 bg-zinc-50 border-l-4 border-black">
-                                  <span className="text-xl">{e.type === "yellow" ? "🟨" : "🟥"}</span>
-                                  <span className="font-black text-red-500 text-lg tabular-nums">{e.min}'</span>
-                                  <span className="font-black text-sm uppercase">{e.player}</span>
+                                <div key={e.id} className="flex items-center justify-between px-4 py-3 bg-zinc-50 border-l-4 border-black">
+                                  <div className="flex items-center gap-4">
+                                    <span className="text-xl">{e.type === "yellow" ? "🟨" : "🟥"}</span>
+                                    <span className="font-black text-red-500 text-lg tabular-nums">{e.min}'</span>
+                                    <span className="font-black text-sm uppercase">{e.player}</span>
+                                  </div>
+                                  <button onClick={() => removeEvent(e.id)} className="text-zinc-400 hover:text-red-500 font-black text-xs">✕</button>
                                 </div>
                               ))}
                             </div>
@@ -796,19 +831,18 @@ function LiveCenter({ match, isAdmin, onToggleAdmin, onBack }) {
               )}
             </div>
 
-            {/* Bitácora admin (compacta, horizontal) */}
-            <div className="h-36 flex flex-col bg-black border-t-4 border-white shrink-0">
+            {/* Bitácora admin (con opción de eliminar/undo transparente) */}
+            <div className="h-40 flex flex-col bg-black border-t-4 border-zinc-800 shrink-0">
               <div className="flex items-center justify-between px-5 py-2 border-b border-zinc-800 shrink-0">
                 <div className="flex items-center gap-3">
-                  <span className="font-black text-white text-[9px] tracking-[0.25em] uppercase">BITÁCORA</span>
-                  {isLive && <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />}
+                  <span className="font-black text-white text-[9px] tracking-[0.25em] uppercase">BITÁCORA DE CONTROL</span>
                 </div>
                 {events.length > 0 && (
-                  <span className="font-bold text-[9px] text-zinc-600 uppercase tracking-widest tabular-nums">{events.length} EVT</span>
+                  <span className="font-bold text-[9px] text-zinc-600 uppercase tracking-widest tabular-nums">{events.length} EVENTOS</span>
                 )}
               </div>
-              <div className="flex-1 overflow-x-auto overflow-y-hidden">
-                <div className="flex flex-row h-full items-stretch gap-px p-2 min-w-max">
+              <div className="flex-1 overflow-x-auto overflow-y-hidden scrollbar-thin scrollbar-thumb-zinc-700">
+                <div className="flex flex-row h-full items-stretch gap-2 p-2 min-w-max">
                   {events.length === 0 ? (
                     <div className="flex items-center justify-center px-10 w-full min-w-40">
                       <p className="font-black text-[9px] uppercase tracking-[0.25em] text-zinc-700">— SIN EVENTOS —</p>
@@ -817,14 +851,23 @@ function LiveCenter({ match, isAdmin, onToggleAdmin, onBack }) {
                     [...events].reverse().map(ev => {
                       const def = EV_TYPES.find(t => t.id === ev.type) || EV_TYPES[0];
                       return (
-                        <div key={ev.id} className="flex flex-col justify-between shrink-0 w-28 bg-zinc-900 hover:bg-zinc-800 transition-colors p-2.5">
+                        <div key={ev.id} className="relative flex flex-col justify-between shrink-0 w-32 bg-zinc-900 border border-zinc-800 p-2.5 rounded-sm group">
+                          {/* Botón Eliminar Evento (Transparencia) */}
+                          <button 
+                            onClick={() => removeEvent(ev.id)}
+                            className="absolute top-1 right-1 w-5 h-5 bg-red-500/10 text-red-500 rounded flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-500 hover:text-white"
+                            title="Eliminar Evento"
+                          >
+                            ✕
+                          </button>
+                          
                           <div className="flex items-center justify-between mb-1">
                             <span className="font-black text-white text-xs tabular-nums">{ev.min}'</span>
                             <span className="text-sm">{def.emoji}</span>
                           </div>
-                          <div style={{ color: def.accent }} className="font-black text-[7px] uppercase tracking-widest mb-0.5">{def.label}</div>
-                          <div className="font-black text-[9px] text-white uppercase leading-tight">{ev.player}</div>
-                          <div className="mt-1 pt-1 border-t border-zinc-700">
+                          <div style={{ color: def.accent }} className="font-black text-[7px] uppercase tracking-widest mb-0.5 truncate pr-4">{def.label}</div>
+                          <div className="font-black text-[9px] text-white uppercase leading-tight truncate">{ev.player}</div>
+                          <div className="mt-1 pt-1 border-t border-zinc-800">
                             <span className="font-bold text-[7px] text-zinc-500 uppercase">{ev.team === "home" ? match.home.abbr : match.away.abbr}</span>
                           </div>
                         </div>
@@ -840,17 +883,11 @@ function LiveCenter({ match, isAdmin, onToggleAdmin, onBack }) {
         ) : (
           /* ─────── VISTA PÚBLICO ─────── */
           isLive
-            ? /* En vivo: timeline ocupa todo */
-              <LiveTimeline
+            ? <LiveTimeline
                 match={match}
                 events={events}
-                seconds={seconds}
-                half={half}
-                homeScore={homeScore}
-                awayScore={awayScore}
               />
-            : /* Pre-partido: animación de espera */
-              <PreMatchWaiting match={match} />
+            : <PreMatchWaiting match={match} />
         )}
 
       </div>
@@ -859,10 +896,12 @@ function LiveCenter({ match, isAdmin, onToggleAdmin, onBack }) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// RAÍZ
+// RAÍZ DEL COMPONENTE
 // ─────────────────────────────────────────────────────────────────────────────
 export default function LiveMatch() {
-  const { isAdmin, toggleRole } = useAuth();
+  const [isAdmin, setIsAdmin] = useState(false);
+  const toggleRole = () => setIsAdmin(prev => !prev);
+  
   const [screen, setScreen]           = useState("selector");
   const [activeMatch, setActiveMatch] = useState(null);
 
